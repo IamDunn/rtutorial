@@ -17,7 +17,6 @@ gfmtData <- read_csv("GFMTDataShort.csv")
 gfmtData$pptID <- factor(gfmtData$pptID)
 gfmtData$TrialType <- factor(gfmtData$TrialType)
 gfmtData$Group <- factor(gfmtData$Group)
-levels(gfmtData$Group) <- c("Control","Test")
 ```
 
 ## R Markdown
@@ -37,8 +36,6 @@ You can also embed plots, for example:
 ```{r visualise, echo=FALSE}
 ggplot(gfmtData, aes(x = TrialType, y = Accuracy)) +
   geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
-#    scale_fill_viridis(option="viridis",discrete=TRUE) +
-#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
     theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
                 axis.title = element_text(family = 'Arial', face="bold", size = 28),
                 axis.text = element_text(family = 'Arial', colour="black", size = 24),
@@ -50,7 +47,7 @@ ggplot(gfmtData, aes(x = TrialType, y = Accuracy)) +
                 panel.background = element_rect(fill = 'white'),
                 strip.text= element_text(family = 'Arial', face='bold', size =22),
                 strip.background = element_rect(fill = 'white')) +
-    labs(title= "GFMT", x="Trial Type",y="Accuracy") +
+    labs(title= "GFMT", x="Trial Type",y="Proportion Correct") +
     stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(0,1) +
     geom_dotplot(binaxis='y', stackdir='center', dotsize=1,binwidth=0.02)
 
