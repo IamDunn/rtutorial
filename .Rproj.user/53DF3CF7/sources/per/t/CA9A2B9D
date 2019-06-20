@@ -1,0 +1,24 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1561005536656.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "312945236",
+    "id" : "CA9A2B9D",
+    "lastKnownWriteTime" : 1561007377,
+    "last_content_update" : 1561007377949,
+    "path" : "~/GitHub/rtutorial/gfmtAnalysis.Rmd",
+    "project_path" : "gfmtAnalysis.Rmd",
+    "properties" : {
+        "cursorPosition" : "19,45",
+        "last_setup_crc32" : "F2474A7F3f6e1fcc",
+        "scrollLine" : "6",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_markdown"
+}

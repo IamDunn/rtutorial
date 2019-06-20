@@ -1,0 +1,67 @@
+---
+title: "GFMT"
+author: "James"
+date: "20 June 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+windowsFonts(Arial=windowsFont("Arial"))
+
+library(tidyverse)
+library(ez)
+
+gfmtData <- read_csv("GFMTData.csv")
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r data prep}
+
+summaryData <- gfmtData %>%
+  group_by(pptID,trialType) %>%
+  summarise(accuracy = mean(correct), rt = mean(RT))
+
+summaryData$pptID <- factor(summaryData$pptID)
+summaryData$trialType <- factor(summaryData$trialType)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r visualise, echo=FALSE}
+ggplot(summaryData, aes(x = trialType, y = accuracy)) +
+  geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
+#    scale_fill_viridis(option="viridis",discrete=TRUE) +
+#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
+    theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
+                axis.title = element_text(family = 'Arial', face="bold", size = 28),
+                axis.text = element_text(family = 'Arial', colour="black", size = 24),
+                axis.line.x = element_line('black', size = 1),
+                axis.line.y = element_line('black', size = 1),
+                axis.ticks = element_line('black', size = 1),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_rect(fill = 'white'),
+                strip.text= element_text(family = 'Arial', face='bold', size =22),
+                strip.background = element_rect(fill = 'white')) +
+    labs(title= "GFMT", x="Trial Type",y="Accuracy") +
+    stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(0,1) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=1,binwidth=0.02)
+
+ggsave("GFMT.png", height = 12, width = 25, limitsize = FALSE)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r analysis}
+gfmtData.ez <- ezANOVA(data = summaryData, dv = .(accuracy), wid = .(pptID), within = .(trialType), detailed = TRUE, type = 3)
+gfmtData.ez
+```

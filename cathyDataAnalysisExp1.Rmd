@@ -1,0 +1,202 @@
+---
+title: "Cathy Honours Exp 1"
+author: "Cathy"
+date: "3 May 2019"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+windowsFonts(Arial=windowsFont("Arial"))
+
+library(tidyverse)
+library(ez)
+
+pairwiseData <- read_csv("exp1Data.csv")
+cardsortData <- read_csv("SDT_Data.csv")
+pileData <- read.csv("pileCountData.csv")
+```
+
+```{r dataprep}
+pairwiseData$participant <- factor(pairwiseData$participant)
+pairwiseData$imageCondition <- factor(pairwiseData$imageCondition)
+pairwiseData$matchorNonmatch <- factor(pairwiseData$matchorNonmatch)
+
+cardsortData$participant <- factor(cardsortData$`Participant Number`)
+
+
+summaryDataPairwise <- pairwiseData %>%
+  filter(participant != "3") %>%
+  group_by(participant,imageCondition,matchorNonmatch) %>%
+  summarise(accuracy = mean(key_resp_2.corr))
+
+SDTDataPairwise <- summaryDataPairwise%>%
+  spread(key = matchorNonmatch, value = accuracy) %>%
+  group_by(participant,imageCondition) %>%
+  summarise(dprime=(qnorm(pmax(1/80, pmin(match, 79/80)))-qnorm(pmax(1/80, pmin((1-nonmatch), 79/80)))), criterion=-0.5*(qnorm(pmax(1/80, pmin(match, 79/80))) + qnorm(pmax(1/80, pmin((1-nonmatch), 79/80)))))
+
+SDTDataPairwiseSPSSdprime <- SDTDataPairwise%>%
+  select(participant, imageCondition, dprime) %>%
+  spread(key = imageCondition, value = dprime)
+
+SDTDataPairwiseSPSScriterion <- SDTDataPairwise%>%
+  select(participant, imageCondition, criterion) %>%
+  spread(key = imageCondition, value = criterion)
+
+dprimeDataPairwise <- SDTDataPairwise %>%
+  select(participant, imageCondition, dprime) %>%
+  spread(key = imageCondition, value = dprime)
+
+criterionDataPairwise <- SDTDataPairwise %>%
+  select(participant, imageCondition, criterion) %>%
+  spread(key = imageCondition, value = criterion)
+
+cardsortDataDprime <- cardsortData %>%
+  select(participant, `Unblurred dprime`, `Blurred dprime`) %>%
+  gather(key = "imageCondition", value = "dprime",`Unblurred dprime`, `Blurred dprime`)
+cardsortDataDprime$imageCondition = factor(cardsortDataDprime$imageCondition)
+levels(cardsortDataDprime$imageCondition) <- c("Blurred","Unblurred")
+
+cardsortDataCriterion <- cardsortData %>%
+  select(participant, `Unblurred criterion`, `Blurred criterion`) %>%
+  gather(key = "imageCondition", value = "criterion",`Unblurred criterion`, `Blurred criterion`)
+cardsortDataCriterion$imageCondition = factor(cardsortDataCriterion$imageCondition)
+levels(cardsortDataCriterion$imageCondition) <- c("Blurred","Unblurred")
+
+```
+
+```{r Pairwise Dprime}
+ggplot(SDTDataPairwise, aes(x = imageCondition, y = dprime)) +
+  geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
+#    scale_fill_viridis(option="viridis",discrete=TRUE) +
+#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
+    theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
+                axis.title = element_text(family = 'Arial', face="bold", size = 28),
+                axis.text = element_text(family = 'Arial', colour="black", size = 24),
+                axis.line.x = element_line('black', size = 1),
+                axis.line.y = element_line('black', size = 1),
+                axis.ticks = element_line('black', size = 1),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_rect(fill = 'white'),
+                strip.text= element_text(family = 'Arial', face='bold', size =22),
+                strip.background = element_rect(fill = 'white')) +
+    labs(title= "Cathy Pairwise Exp1", x="Image Condition",y="Dprime") +
+    stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(-1,3) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=2,binwidth=0.03)
+
+ggsave("Pairwise dprime Data.png", height = 12, width = 25, limitsize = FALSE)
+
+PairwiseDprime.ez <- ezANOVA(data = SDTDataPairwise, dv = .(dprime), wid = .(participant), within = .(imageCondition), detailed = TRUE, type = 3)
+PairwiseDprime.ez
+
+```
+
+```{r Pairwise Criterion}
+
+ggplot(SDTDataPairwise, aes(x = imageCondition, y = criterion)) +
+  geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
+#    scale_fill_viridis(option="viridis",discrete=TRUE) +
+#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
+    theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
+                axis.title = element_text(family = 'Arial', face="bold", size = 28),
+                axis.text = element_text(family = 'Arial', colour="black", size = 24),
+                axis.line.x = element_line('black', size = 1),
+                axis.line.y = element_line('black', size = 1),
+                axis.ticks = element_line('black', size = 1),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_rect(fill = 'white'),
+                strip.text= element_text(family = 'Arial', face='bold', size =22),
+                strip.background = element_rect(fill = 'white')) +
+    labs(title= "Cathy Pairwise Exp1", x="Condition",y="Criterion") +
+    stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(-2,2) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=2,binwidth=0.03)
+
+ggsave("Pairwise Criterion Data.png", height = 12, width = 25, limitsize = FALSE)
+
+PairwiseCriterion.ez <- ezANOVA(data = SDTDataPairwise, dv = .(criterion), wid = .(participant), within = .(imageCondition), detailed = TRUE, type = 3)
+PairwiseCriterion.ez
+```
+```{r Card Sort Dprime}
+ggplot(cardsortDataDprime, aes(x = imageCondition, y = dprime)) +
+  geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
+#    scale_fill_viridis(option="viridis",discrete=TRUE) +
+#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
+    theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
+                axis.title = element_text(family = 'Arial', face="bold", size = 28),
+                axis.text = element_text(family = 'Arial', colour="black", size = 24),
+                axis.line.x = element_line('black', size = 1),
+                axis.line.y = element_line('black', size = 1),
+                axis.ticks = element_line('black', size = 1),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_rect(fill = 'white'),
+                strip.text= element_text(family = 'Arial', face='bold', size =22),
+                strip.background = element_rect(fill = 'white')) +
+    labs(title= "Cathy Cardsort Exp1", x="Condition",y="Dprime") +
+    stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(-1,3) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=2,binwidth=0.03)
+
+ggsave("Cardsort Dprime Data.png", height = 12, width = 25, limitsize = FALSE)
+
+CardSortDprime.ez <- ezANOVA(data = cardsortDataDprime, dv = .(dprime), wid = .(participant), within = .(imageCondition), detailed = TRUE, type = 3)
+CardSortDprime.ez
+```
+
+```{r Card Sort Criterion}
+ggplot(cardsortDataCriterion, aes(x = imageCondition, y = criterion)) +
+  geom_violin(colour = "black", size = 1,show.legend = F,alpha=.8) +
+#    scale_fill_viridis(option="viridis",discrete=TRUE) +
+#    geom_boxplot(width=0.12, size = 1, colour='black',fill = 'light grey', alpha = .9) +
+    theme(      plot.title = element_text(family = 'Arial', face="bold", size = 30, hjust = 0.5),
+                axis.title = element_text(family = 'Arial', face="bold", size = 28),
+                axis.text = element_text(family = 'Arial', colour="black", size = 24),
+                axis.line.x = element_line('black', size = 1),
+                axis.line.y = element_line('black', size = 1),
+                axis.ticks = element_line('black', size = 1),
+                panel.grid.major = element_blank(),
+                panel.grid.minor = element_blank(),
+                panel.background = element_rect(fill = 'white'),
+                strip.text= element_text(family = 'Arial', face='bold', size =22),
+                strip.background = element_rect(fill = 'white')) +
+    labs(title= "Cathy Cardsort Exp1", x="Condition",y="Criterion") +
+    stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") +ylim(-2,2) +
+    geom_dotplot(binaxis='y', stackdir='center', dotsize=2,binwidth=0.03)
+
+ggsave("Cardsort Criterion Data.png", height = 12, width = 25, limitsize = FALSE)
+
+CardSortCriterion.ez <- ezANOVA(data = cardsortDataCriterion, dv = .(criterion), wid = .(participant), within = .(imageCondition), detailed = TRUE, type = 3)
+CardSortCriterion.ez
+```
+
+```{r Pile Count Comparison}
+t.test(pileData$UnblurredPiles,pileData$BlurredPiles,paired=TRUE)
+```
+
+```{r Individual Differences analysis}
+#Within Test
+cor.test(dprimeDataPairwise$unblurred,dprimeDataPairwise$blurred, method = "spearman")
+cor.test(criterionDataPairwise$unblurred,criterionDataPairwise$blurred, method = "spearman")
+cor.test(cardsortData$`Unblurred dprime`,cardsortData$`Blurred dprime`, method = "spearman")
+cor.test(cardsortData$`Unblurred criterion`,cardsortData$`Blurred criterion`, method = "spearman")
+
+#Across Test
+cor.test(dprimeDataPairwise$unblurred,cardsortData$`Unblurred dprime`, method = "spearman")
+cor.test(dprimeDataPairwise$blurred,cardsortData$`Blurred dprime`, method = "spearman")
+cor.test(criterionDataPairwise$unblurred,cardsortData$`Unblurred criterion`, method = "spearman")
+cor.test(criterionDataPairwise$blurred,cardsortData$`Blurred criterion`, method = "spearman")
+
+#Card Sort Piles
+cor.test(pileData$UnblurredPiles,cardsortData$`Unblurred dprime`, method = "spearman")
+cor.test(pileData$UnblurredPiles,cardsortData$`Blurred dprime`, method = "spearman")
+cor.test(pileData$UnblurredPiles,cardsortData$`Unblurred criterion`, method = "spearman")
+cor.test(pileData$UnblurredPiles,cardsortData$`Blurred criterion`, method = "spearman")
+
+cor.test(pileData$UnblurredPiles,dprimeDataPairwise$unblurred, method = "spearman")
+cor.test(pileData$UnblurredPiles,dprimeDataPairwise$blurred, method = "spearman")
+cor.test(pileData$UnblurredPiles,criterionDataPairwise$unblurred, method = "spearman")
+cor.test(pileData$UnblurredPiles,criterionDataPairwise$blurred, method = "spearman")
+
+```

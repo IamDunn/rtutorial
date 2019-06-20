@@ -1,0 +1,5 @@
+"0","gfmtData.ez <- ezANOVA(data = gfmtData, dv = .(Accuracy), wid = .(pptID), within = .(TrialType), between = .(Group), detailed = TRUE, type = 3)"
+"2","Converting ""pptID"" to factor for ANOVA."
+"0","gfmtData.ez"
+"1","$`ANOVA`
+"
