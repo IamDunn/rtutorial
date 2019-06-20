@@ -55,7 +55,7 @@ ggplot(summaryData, aes(x = trialType, y = accuracy)) +
     stat_summary(fun.y=mean, geom="point", shape = 21, size=8, fill="red") + ylim(0,1) +
     geom_dotplot(binaxis='y', stackdir='center', dotsize=1,binwidth=0.02)
 
-ggsave("GFMT2.png", height = 12, width = 25, limitsize = FALSE)
+ggsave("GFMT.png", height = 12, width = 25, limitsize = FALSE)
 ```
 
 Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
